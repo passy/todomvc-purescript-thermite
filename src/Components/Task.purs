@@ -11,6 +11,8 @@ import Data.Foldable (fold)
 import Control.Monad.Eff
 import Control.Monad.Eff.Unsafe
 
+import Node.UUID (UUID())
+
 import qualified Thermite as T
 
 import qualified React as R
@@ -26,12 +28,13 @@ data TaskAction
 
 -- | The state for the task component
 type Task =
-  { completed :: Boolean
-    , description :: String
+  { id :: UUID
+  , completed :: Boolean
+  , description :: String
   }
 
-initialTask :: String -> Task
-initialTask s = { completed: false, description: s }
+initialTask :: UUID -> String -> Task
+initialTask u s = { id: u, completed: false, description: s }
 
 -- | A `Spec` for the task component.
 taskSpec :: forall eff props. T.Spec eff Task props TaskAction
@@ -40,7 +43,7 @@ taskSpec = T.simpleSpec performAction render
   -- Renders the current state of the component as a collection of React elements.
   render :: T.Render Task props TaskAction
   render dispatch _ s _ =
-    [ R.tr' <<< map (R.td' <<< pure) $
+    [ (R.tr [ RP.key $ show s.id ]) <<< map (R.td' <<< pure) $
         [ R.input [ RP._type "checkbox"
                   , RP.className "checkbox"
                   , RP.checked (if s.completed then "checked" else "")

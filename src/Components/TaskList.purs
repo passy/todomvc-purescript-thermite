@@ -13,6 +13,8 @@ import Data.Foldable (fold)
 import Control.Monad.Eff
 import Control.Monad.Eff.Unsafe
 
+import qualified Node.UUID as UUID
+
 import qualified Thermite as T
 
 import qualified React as R
@@ -95,7 +97,8 @@ taskList = container $ fold
     -- The `NewTask` action is handled here
     -- Everything else is handled by some other child component so is ignored here.
     performAction :: T.PerformAction eff TaskListState props TaskListAction
-    performAction (NewTask s) _ state k = k $ state { tasks = Cons (initialTask s) state.tasks }
+    performAction (NewTask s) _ state k =
+      UUID.v4 >>= \id -> k $ state { tasks = Cons (initialTask id s) state.tasks }
     performAction _ _ _ _ = pure unit
 
   -- This function wraps a `Spec`'s `Render` function to filter out tasks.
